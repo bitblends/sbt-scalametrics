@@ -8,8 +8,8 @@
 <div style="display: flex; gap: 5pt; align-items: baseline; justify-content: left;">
 
 [![Release](https://img.shields.io/github/v/release/bitblends/sbt-scalametrics?sort=semver&style=flat&color=darkgreen&labelColor=2f363d&logo=github&logoColor=white)](https://github.com/bitblends/sbt-scalametrics/releases/latest)
-[![Maven Central](https://img.shields.io/maven-central/v/com.bitblends/sbt-scalametrics_2.12?style=flat&color=darkgreen&labelColor=2f363d&logo=Sonatype&logoColor=white)](https://central.sonatype.com/artifact/com.bitblends/sbt-scalametrics_2.12)
-[![CI](https://img.shields.io/github/actions/workflow/status/bitblends/sbt-scalametrics/ci.yml?branch=main&style=flat&color=green&labelColor=2f363d)](https://github.com/bitblends/sbt-scalametrics/actions/workflows/ci.yml?query=branch%3Amain)
+[![Maven Central](https://img.shields.io/maven-central/v/com.bitblends/sbt-scalametrics_2.12_1.0?style=flat&color=darkgreen&labelColor=2f363d&logo=Sonatype&logoColor=white)](https://central.sonatype.com/artifact/com.bitblends/sbt-scalametrics_2.12_1.0)
+[![CI](https://github.com/bitblends/sbt-scalametrics/actions/workflows/ci.yml/badge.svg)](https://github.com/bitblends/sbt-scalametrics/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-3?style=flat&color=yellow&labelColor=2f363d&logoColor=white)](LICENSE)
 
 </div>
@@ -25,15 +25,15 @@ library by visiting the [ScalaMetrics Documentation](https://bitblends.github.io
 ## Features
 
 - Function level, member level, file level, package level, and project level metrics:
-    - Cyclomatic complexity
-    - Nesting depth analysis
-    - Expression branch density
-    - Pattern matching usage
-    - Lines of code (LOC) statistics
-    - Documentation coverage
-    - Parameter and arity analysis (implicit, using, default, vararg)
-    - Return type explicitness tracking
-    - Inline and implicit usage analysis
+	- Cyclomatic complexity
+	- Nesting depth analysis
+	- Expression branch density
+	- Pattern matching usage
+	- Lines of code (LOC) statistics
+	- Documentation coverage
+	- Parameter and arity analysis (implicit, using, default, vararg)
+	- Return type explicitness tracking
+	- Inline and implicit usage analysis
 - Single HTML report file for an easy way to view the generated metrics
 - Raw JSON and CSV data files for further processing
 - Supports Scala 2.12.x, 2.13.x, and 3.x.x dialects and multi-module projects
@@ -48,7 +48,7 @@ plugin [here](https://bitblends.github.io/sbt-scalametrics/example-report/metric
 Add the plugin to your project's `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.bitblends" % "sbt-scalametrics" % "1.0.0")
+addSbtPlugin("com.bitblends" % "sbt-scalametrics" % "1.1.0")
 ```
 
 ### For Flat Projects or Per-Module Analysis
