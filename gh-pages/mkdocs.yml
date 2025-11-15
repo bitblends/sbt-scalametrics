@@ -2,7 +2,7 @@ site_name: Sbt ScalaMetrics
 site_url: https://bitblends.github.io/sbt-scalametrics
 site_description: Comprehensive code metrics and analysis library for Scala
 site_author: BitBlends
-repo_name: scalametrics
+repo_name: sbt-scalametrics
 repo_url: https://github.com/bitblends/sbt-scalametrics
 edit_uri: edit/main/docs/
 theme:
