@@ -39,7 +39,7 @@ jobs:
         uses: sbt/setup-sbt@v1
       - name: Build ScalaDocs
         run: |
-          cp LICENSE gh-pages/docs/
+          cp LICENSE gh-pages/docs/LICENSE.md
           cp CONTRIBUTING.md gh-pages/docs/
           cp CODE_OF_CONDUCT.md gh-pages/docs/
           sbt doc

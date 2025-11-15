@@ -25,12 +25,11 @@ toc: true
 <div markdown class="badges">
 
  [![Release](https://img.shields.io/github/v/release/bitblends/sbt-scalametrics?sort=semver&style=flat&color=darkgreen&labelColor=2f363d&logo=github&logoColor=white)](https://github.com/bitblends/sbt-scalametrics/releases/latest){:target="_blank"}
- [![Maven Central](https://img.shields.io/maven-central/v/com.bitblends/sbt-scalametrics_2.12?style=flat&color=darkgreen&labelColor=2f363d&logo=Sonatype&logoColor=white)](https://central.sonatype.com/artifact/com.bitblends/sbt-scalametrics_2.12){:target="_blank",style="margin-right: 10px;"}
- [![CI](https://img.shields.io/github/actions/workflow/status/bitblends/sbt-calametrics/ci.yml?branch=main&style=flat&color=green&labelColor=2f363d)](https://github.com/bitblends/sbt-scalametrics/actions/workflows/ci.yml?query=branch%3Amain){:target="_blank"}
+ [![Maven Central](https://img.shields.io/maven-central/v/com.bitblends/sbt-scalametrics_2.12_1.0?style=flat&color=darkgreen&labelColor=2f363d&logo=Sonatype&logoColor=white)](https://central.sonatype.com/artifact/com.bitblends/sbt-scalametrics_2.12_1.0){:target="_blank",style="margin-right: 10px;"}
+ [![CI](https://github.com/bitblends/sbt-scalametrics/actions/workflows/ci.yml/badge.svg)](https://github.com/bitblends/sbt-scalametrics/actions/workflows/ci.yml){:target="_blank"}
  [![License](https://img.shields.io/badge/License-MIT-3?style=flat&color=yellow&labelColor=2f363d&logoColor=white)](LICENSE){:target="_blank"}
 
 </div>
-
 <p markdown>
 
 [Sbt ScalaMetrics](https://github.com/bitblends/sbt-scalametrics){:target="_blank"} is an Sbt plugin
@@ -42,8 +41,8 @@ charts and raw JSON and CSV data files. Learn more about ScalaMetrics library by
 the [ScalaMetrics Documentation](https://bitblends.github.io/scalametrics/){:target="_blank"} site.
 
 </p>
-<!-- format: off -->
-<!-- @formatter:off -->
+<!-- format: on -->
+<!-- @formatter:on -->
 
 ## Features
 
@@ -66,16 +65,16 @@ the [ScalaMetrics Documentation](https://bitblends.github.io/scalametrics/){:tar
 <!-- format: off -->
 <!-- @formatter:off -->
 Please refer to the [Getting Started][getting-started] guide for instructions and quick start examples.
-You can also explore the [ScalaMetrics' Metrics Overview](https://bitblends.github.io/scalametrics/metrics-overview/){:target="_blank"} 
-to learn more about the various metrics provided by ScalaMetrics library.
+You can also explore the [Metrics Overview](https://bitblends.github.io/scalametrics/metrics-overview/){:target="_blank"} 
+page of ScalaMetrics library to learn more about the various metrics provided by this library.
 <!-- format: on -->
 <!-- @formatter:on -->
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-Licensed under the MIT License. See [LICENSE](LICENSE) file for details.
+Licensed under the MIT License. See [LICENSE](LICENSE.md){add_header Content-Disposition inline; } file for details.
 
