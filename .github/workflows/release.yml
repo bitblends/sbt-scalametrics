@@ -19,6 +19,7 @@ jobs:
   ######################
   verify-tag:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       tag_name: ${{ steps.tagvars.outputs.tag_name }}
       tag_ref: ${{ steps.tagvars.outputs.tag_ref }}
