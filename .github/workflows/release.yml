@@ -1,0 +1,309 @@
+name: Release
+
+# Triggered by:
+#   - tag.yml workflow (pushes a tag)
+#   - pushing a tag (manually)
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+jobs:
+
+  ######################
+  # Verify Tag on Main #
+  ######################
+  verify-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.tagvars.outputs.tag_name }}
+      tag_ref: ${{ steps.tagvars.outputs.tag_ref }}
+      on_main: ${{ steps.verify.outputs.on_main }}
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Resolve Tag
+        id: tagvars
+        run: |
+          set -Eeuo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG_NAME="${{ github.event.inputs.tag }}"
+            TAG_REF="refs/tags/${{ github.event.inputs.tag }}"
+          else
+            TAG_NAME="${GITHUB_REF##*/}"          # v0.3.17
+            TAG_REF="${GITHUB_REF}"               # refs/tags/v0.3.17
+          fi
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "tag_ref=$TAG_REF" >> "$GITHUB_OUTPUT"
+      - name: Verify Tag is on main branch
+        id: verify
+        run: |
+          set -Eeuo pipefail
+          TAG=${{ steps.tagvars.outputs.tag_name }}
+          echo "Resolved tag: $TAG"
+          if ! git show-ref --verify --quiet "refs/tags/$TAG"; then
+            echo "::error::Tag $TAG not found."
+            exit 1
+          fi
+          if ! git show-ref --verify --quiet refs/remotes/origin/main; then
+            echo "::error::origin/main not found in repository."
+            exit 1
+          fi
+          if ! TAG_COMMIT=$(git rev-list -n 1 "$TAG"); then
+            echo "::error::Failed to resolve commit for tag $TAG"
+            exit 1
+          fi
+          if [ -z "$TAG_COMMIT" ]; then
+            echo "::error::Empty commit resolved for ref $GITHUB_REF"
+            exit 1
+          fi
+          if git merge-base --is-ancestor "$TAG_COMMIT" origin/main; then
+            echo "on_main=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "on_main=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Stop if not on main
+        if: steps.verify.outputs.on_main == 'false'
+        run: |
+          echo "Tag is not on main. Skipping release."
+          exit 0
+
+  #######################
+  # Publish to Sonatype #
+  #######################
+  publish:
+    needs: [verify-tag]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: sbt
+      - name: Setup SBT
+        uses: sbt/setup-sbt@v1
+      - name: Print Tag and Ref Info
+        run: |
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "Resolved tag: ${{ needs.verify-tag.outputs.tag_name }}"
+      - name: Publish to Sonatype
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          RELEASE_TAG: ${{ needs.verify-tag.outputs.tag_name }}
+        run: |
+          echo "Releasing tag $RELEASE_TAG"
+          echo "GITHUB_REF=${{ needs.verify-tag.outputs.tag_name }}"
+          sbt -v ci-release
+
+  #######################
+  # Deploy GitHub Pages #
+  #######################
+  deploy-pages:
+      needs:
+        - publish
+        - verify-tag
+      if: ${{ needs.publish.result == 'success' }}
+      permissions:
+        contents: read
+        pages: write
+        id-token: write
+      uses: ./.github/workflows/deploy-pages.yml
+      with:
+        tag: ${{ needs.verify-tag.outputs.tag_name }}
+
+  ##################
+  # Create Release #
+  ##################
+  release:
+    needs:
+      - verify-tag
+      - publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Get Tag Message
+        id: tag_message
+        run: |
+          TAG=${{ steps.tagvars.outputs.tag_name }}
+          TAG_MESSAGE=$(git tag -l --format='%(contents)' ${{ steps.tagvars.outputs.tag_name }})
+          echo "$TAG_MESSAGE" > tag_message.txt
+      - name: Gather PR Information and Generate Release Notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Initialize release notes
+          TAG=${{ needs.verify-tag.outputs.tag_name }}
+          echo "## Release $TAG" > release_notes.md
+          echo "" >> release_notes.md
+          
+          # Add tag message
+          if [ -s tag_message.txt ]; then
+            echo "### 📝 Release Notes" >> release_notes.md
+            cat tag_message.txt >> release_notes.md
+            echo "" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+          
+          # Get previous tag (^ means parent commit of the tag)
+          PREV_TAG=$(git describe --tags --abbrev=0 "$TAG"^ 2>/dev/null || echo "")
+         
+          # Get all commits between tags
+          if [ -n "$PREV_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%H" "$PREV_TAG..$TAG")
+          else
+            COMMITS=$(git log --pretty=format:"%H" "$TAG")
+          fi
+
+          # Initialize arrays for categorized changes
+          > features.txt
+          > bugs.txt
+          > docs.txt
+          > ci.txt
+          > chore.txt
+          > style.txt
+          > test.txt
+          > other.txt
+
+          # Fetch recent merged PRs using GraphQL (we'll filter by commits later)
+          PRS_JSON=$(gh api graphql -F owner="${{ github.repository_owner }}" -F name="${{ github.event.repository.name }}" -f query='
+            query($owner: String!, $name: String!) {
+              repository(owner: $owner, name: $name) {
+                pullRequests(first: 100, states: MERGED, orderBy: {field: MERGED_AT, direction: DESC}) {
+                  nodes {
+                    number
+                    title
+                    labels(first: 10) { nodes { name } }
+                    mergedAt
+                    mergeCommit { oid }
+                  }
+                }
+              }
+            }
+          ' | jq '.data.repository.pullRequests.nodes')
+
+          # Filter and categorize PRs that are in our commit range
+          echo "$PRS_JSON" | jq -c '.[]' | while read -r pr; do
+            PR_NUMBER=$(echo "$pr" | jq -r '.number')
+            PR_TITLE=$(echo "$pr" | jq -r '.title')
+            PR_MERGE_COMMIT=$(echo "$pr" | jq -r '.mergeCommit.oid // empty')
+            PR_LABELS=$(echo "$pr" | jq -r '.labels.nodes[].name // empty' | tr '\n' ' ')
+
+            # Check if this PR's merge commit is in our commit range
+            if [ -n "$PR_MERGE_COMMIT" ] && echo "$COMMITS" | grep -q "$PR_MERGE_COMMIT"; then
+              if echo "$PR_LABELS" | grep -qE "feat|feature|enhancement"; then
+                echo "- #$PR_NUMBER: $PR_TITLE" >> features.txt
+              elif echo "$PR_LABELS" | grep -qE "bug|fix|bugfix"; then
+                echo "- #$PR_NUMBER: $PR_TITLE" >> bugs.txt
+              elif echo "$PR_LABELS" | grep -qE "documentation|docs"; then
+                echo "- #$PR_NUMBER: $PR_TITLE" >> docs.txt
+              elif echo "$PR_LABELS" | grep -qE "ci|cicd"; then
+                echo "- #$PR_NUMBER: $PR_TITLE" >> ci.txt
+              elif echo "$PR_LABELS" | grep -qE "chore|maintenance"; then
+                echo "- #$PR_NUMBER: $PR_TITLE" >> chore.txt
+              elif echo "$PR_LABELS" | grep -qE "style|formatting"; then
+                echo "- #$PR_NUMBER: $PR_TITLE" >> style.txt
+              elif echo "$PR_LABELS" | grep -qE "test|tests|testing"; then
+                echo "- #$PR_NUMBER: $PR_TITLE" >> test.txt
+              else
+                echo "- #$PR_NUMBER: $PR_TITLE" >> other.txt
+              fi
+            fi
+          done
+          
+          # Build categorized changelog
+          [ -s features.txt ] && { echo "### 🚀 Features" >> release_notes.md; cat features.txt >> release_notes.md; echo "" >> release_notes.md; }
+          [ -s bugs.txt ] && { echo "### 🐞 Bug Fixes" >> release_notes.md; cat bugs.txt >> release_notes.md; echo "" >> release_notes.md; }
+          [ -s docs.txt ] && { echo "### 📚 Documentation" >> release_notes.md; cat docs.txt >> release_notes.md; echo "" >> release_notes.md; }
+          [ -s ci.txt ] && { echo "### ⚙️ CICD Changes" >> release_notes.md; cat ci.txt >> release_notes.md; echo "" >> release_notes.md; }
+          [ -s chore.txt ] && { echo "### 🧹 Chore" >> release_notes.md; cat chore.txt >> release_notes.md; echo "" >> release_notes.md; }
+          [ -s style.txt ] && { echo "### 🎨 Style" >> release_notes.md; cat style.txt >> release_notes.md; echo "" >> release_notes.md; }
+          [ -s test.txt ] && { echo "### 🧪 Test" >> release_notes.md; cat test.txt >> release_notes.md; echo "" >> release_notes.md; }
+          [ -s other.txt ] && { echo "### 🔧 Other Changes" >> release_notes.md; cat other.txt >> release_notes.md; }
+          
+          # Add footer with comparison link
+          echo -e "\n\n---\n" >> release_notes.md
+          [ -n "$PREV_TAG" ] && echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREV_TAG...$TAG" >> release_notes.md
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=${{ needs.verify-tag.outputs.tag_name }}
+          gh release create "$TAG" \
+            --draft=true \
+            --title "Release $TAG" \
+            --notes-file release_notes.md \
+            --repo ${{ github.repository }}
+
+  ##################%%%%%%%
+  # Delete Tag (recovery) #
+  ##################%%%%%%%
+  cleanup-tag:
+    needs:
+      - verify-tag
+      - publish
+      - release
+    if: ${{ always() && (needs.verify-tag.result == 'failure' || needs.publish.result == 'failure' || needs.release.result == 'failure') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Delete pushed tag on failure
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -Eeuo pipefail
+  
+          # Extract tag from ref (e.g., refs/tags/v1.2.3 -> v1.2.3)
+          REF="$GITHUB_REF"
+          if [[ "$REF" == refs/tags/* ]]; then
+            TAG="${REF#refs/tags/}"
+          else
+            TAG="${{ needs.verify-tag.outputs.tag_name }}"
+          fi
+  
+          if [ -z "$TAG" ]; then
+            echo "No tag resolved. Skipping deletion."
+            exit 0
+          fi
+  
+          echo "Attempting to delete tag: $TAG"
+  
+          # Try GitHub API delete
+          if gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$TAG"; then
+            echo "Deleted remote tag via GitHub API: $TAG"
+            exit 0
+          fi
+  
+          echo "GitHub API delete failed. Trying git push --delete..."
+  
+          # Fallback via git
+          git init -q
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
+          git push --delete origin "$TAG" || true
+          echo "Cleanup attempted for tag: $TAG"

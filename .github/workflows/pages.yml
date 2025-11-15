@@ -1,0 +1,111 @@
+name: Pages
+
+# Triggered by changes to the "gh-pages/" directory on the "main" branch (exclusively)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'gh-pages/**'
+  pull_request:
+    branches: [main]
+    types: [opened, reopened]
+    paths:
+      - 'gh-pages/**'
+
+concurrency:
+  group: pages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+
+  ##############
+  # Job Status #
+  ##############
+  enforce-all-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      checks: read
+    steps:
+      - name: GitHub Checks
+        uses: poseidon/wait-for-status-checks@v0.6.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  ########################
+  # Detect Only gh-pages #
+  ########################
+  detect-only-gh-pages:
+    runs-on: ubuntu-latest
+    outputs:
+      only_gh_pages: ${{ steps.check.outputs.only_gh_pages }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Determine changed files
+        id: check
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA='${{ github.event.pull_request.base.sha }}'
+            HEAD_SHA='${{ github.event.pull_request.head.sha }}'
+            git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+            CHANGED="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          else
+            BEFORE='${{ github.event.before }}'
+            AFTER='${{ github.sha }}'
+            if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+              CHANGED="$(git diff-tree --no-commit-id --name-only -r "$AFTER")"
+            else
+              CHANGED="$(git diff --name-only "$BEFORE" "$AFTER")"
+            fi
+          fi
+          echo "Changed files:"
+          echo "$CHANGED"
+          if [ -z "$CHANGED" ]; then
+            echo "only_gh_pages=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # If any file is outside gh-pages/, do not mark as only_gh_pages
+          if echo "$CHANGED" | grep -v '^gh-pages/' >/dev/null; then
+            echo "only_gh_pages=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "only_gh_pages=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  ##############
+  # PR Labeler #
+  ##############
+  labele-pr:
+    needs: detect-only-gh-pages
+    if: ${{ github.event_name == 'pull_request' && needs.detect-only-gh-pages.outputs.only_gh_pages == 'true' }}
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Label PR
+        uses: TimonVS/pr-labeler-action@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  #######################
+  # Deploy GitHub Pages #
+  #######################
+  deploy-pages:
+    needs: detect-only-gh-pages
+    if: ${{ github.event_name == 'push' && needs.detect-only-gh-pages.outputs.only_gh_pages == 'true' }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy-pages.yml
+

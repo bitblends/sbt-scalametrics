@@ -1,0 +1,20 @@
+.badges p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem; /* or 8px or whatever */
+}
+
+.badges p a {
+  display: inline-block;
+}
+
+.header-logo {
+    display: flex;
+    justify-content: start;
+    align-items: baseline;
+}
+
+.header-logo p {
+    padding: 0;
+    margin: 0;
+}

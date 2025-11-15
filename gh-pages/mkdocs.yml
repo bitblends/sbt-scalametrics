@@ -1,0 +1,93 @@
+site_name: Sbt ScalaMetrics
+site_url: https://bitblends.github.io/sbt-scalametrics
+site_description: Comprehensive code metrics and analysis library for Scala
+site_author: BitBlends
+repo_name: scalametrics
+repo_url: https://github.com/bitblends/sbt-scalametrics
+edit_uri: edit/main/docs/
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant.progress
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+    - toc.integrate
+  icon:
+    repo: fontawesome/brands/github
+  favicon: images/favicon.png
+  logo: images/logo.png
+plugins:
+  - search
+  - macros
+  - autorefs
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      pygments_lang_class: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.details
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bitblends/sbt-scalametrics
+  version:
+    provider: mike
+  generator: false
+  project_version: !!python/object/apply:os.getenv [ "PROJECT_VERSION", "x.y.z" ]
+extra_javascript:
+  - javascripts/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+extra_css:
+  - https://unpkg.com/katex@0/dist/katex.min.css
+  - stylesheets/extra.css
+copyright: Copyright &copy; 2025 - Sbt ScalaMetrics Maintainers
+nav:
+  - Home: index.md
+  - Getting Started: getting-started/index.md
+  - Schema Definition: schema-definition/index.md
+  - Example Report: example-report/index.md
+  - API Reference: api-reference/index.md
+
+

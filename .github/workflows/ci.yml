@@ -1,0 +1,76 @@
+name: CI
+
+# Triggered by pushes to any branch except "main" and by PRs opened or reopened against "main"
+on:
+  push:
+    branches-ignore: [ main ]
+  pull_request:
+    branches: [ main ]
+    types: [ opened, reopened ]
+    paths-ignore:
+      - 'gh-pages/**'
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+
+  ##############
+  # Job Status #
+  ##############
+  enforce-all-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      checks: read
+    steps:
+      - name: GitHub Checks
+        uses: poseidon/wait-for-status-checks@v0.6.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  ###########################
+  # Compile, ScalaFmt, Tests
+  ###########################
+  build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: sbt
+      - name: Setup SBT
+        uses: sbt/setup-sbt@v1
+      - name: Compile, ScalaFmt Check, Test
+        continue-on-error: false
+        run: sbt -v clean compile scalafmtCheck test
+
+  #############
+  # PR Labeler
+  #############
+  labele-pr:
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Label PR
+        uses: TimonVS/pr-labeler-action@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

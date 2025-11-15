@@ -1,0 +1,441 @@
+/* tailwind.css */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@import "tailwindcss";
+@source "./*.{html,js}";
+
+@theme {
+    --font-ui: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-sans: var(--font-ui);
+}
+
+@layer base {
+    button {
+        @apply cursor-pointer;
+    }
+
+    .dark {
+        color: #e2e8f0;
+        background-color: #1a202c
+    }
+
+    .dark body.bg-gray-50 {
+        background-color: #1a202c !important
+    }
+
+    .dark .bg-gray-50:not(body), .dark .bg-white, .dark table, .dark thead, .dark tbody {
+        background-color: #2d3748 !important
+    }
+
+    .dark .bg-gradient-to-r.from-blue-600.to-indigo-600 {
+        background-image: linear-gradient(90deg, #1e3a8a, #3730a3) !important
+    }
+
+    /* Override divide-gray-200 to prevent first row border color change in dark mode */
+    .divide-gray-200 > :not(:last-child) {
+        border-color: var(--color-gray-200) !important
+    }
+
+    .dark .divide-gray-200 > :not(:last-child) {
+        border-color: var(--color-gray-600) !important
+    }
+}
+
+@layer components {
+    #custom-tooltip {
+        transition: opacity .2s ease-in-out;
+    }
+
+    .tab-content {
+        display: none
+    }
+
+    .tab-content.active {
+        display: block
+    }
+
+    .slice text {
+        fill: #fff;
+        font-size: 12px;
+        font-weight: 700
+    }
+
+    .bar {
+        transition: opacity .2s
+    }
+
+    .bar:hover {
+        opacity: .8
+    }
+
+    .axis text {
+        font-size: 12px
+    }
+
+    .axis path, .axis line {
+        stroke: #d1d5db
+    }
+
+    .chart-tooltip {
+        color: #fff;
+        pointer-events: none;
+        opacity: 0;
+        background: #000c;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 12px;
+        transition: opacity .2s;
+        position: absolute
+    }
+
+    .chart-scroll-container {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: auto hidden
+    }
+
+    #heatmapChart .sub {
+        color: var(--muted);
+        margin-bottom: 18px;
+    }
+
+    #heatmapChart .controls {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    #heatmapChart .legend {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+        font-size: 12px;
+    }
+
+    #heatmapChart .legend .swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        outline: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    #heatmapChart .chart-wrap {
+        overflow: auto;
+        border: 1px solid var(--grid);
+        border-radius: 10px;
+    }
+
+    #heatmapChart .axis line, .axis path {
+        stroke: var(--grid);
+    }
+
+    #heatmapChart .cell {
+        shape-rendering: crispEdges;
+        cursor: crosshair;
+    }
+
+    #heatmapChart .cell:hover {
+        outline: 2px solid rgba(255, 255, 255, 0.5);
+        outline-offset: -2px;
+    }
+
+    #heatmapChart .footer {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    #heatmapChart .btn {
+        appearance: none;
+        border: 1px solid #374151;
+        background: #0f172a;
+        color: #9ca3af;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    #heatmapChart .btn:hover:not([aria-pressed="true"]) {
+        background: #1e293b;
+        border-color: #4b5563;
+        color: #cbd5e0;
+    }
+
+    #heatmapChart .btn:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    #heatmapChart .btn[aria-pressed="true"] {
+        background: #2563eb;
+        border: 1px solid #3b82f6;
+        color: #ffffff;
+        @apply ring ring-blue-400;
+    }
+
+    .dark #heatmapChart .btn[aria-pressed="true"] {
+        background: #1d4ed8;
+        border-color: #2563eb;
+        @apply ring ring-blue-400;
+    }
+
+    #heatmapChart .toggle-btn {
+        cursor: pointer;
+        vertical-align: middle;
+        background: 0 0;
+        border: none;
+        margin-right: 8px;
+        padding: 0;
+        display: inline-block
+    }
+
+    #heatmapChart .toggle-btn svg {
+        transition: transform .2s;
+        transform: rotate(90deg)
+    }
+
+    #heatmapChart .toggle-btn.collapsed svg {
+        transform: rotate(0)
+    }
+
+    #heatmapChart .package-row {
+        user-select: none
+    }
+
+    #heatmapChart .shadow {
+        box-shadow: 0 2px 4px -1px #00000014, 0 4px 6px -1px #0000001f !important
+    }
+
+    #heatmapChart .shadow-lg {
+        box-shadow: 0 10px 15px -3px #0000001f, 0 4px 6px -2px #00000014 !important
+    }
+
+
+    .heatmap-tooltip, .dark.heatmap-tooltip {
+        position: fixed;
+        pointer-events: none;
+        background: rgba(12, 17, 23, 0.95);
+        color: #cbd5e0;
+        border: 1px solid var(--grid);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        transform: translate(-50%, calc(-100% - 12px));
+        opacity: 0;
+        transition: opacity 120ms ease;
+        z-index: 10;
+    }
+
+    .dark .bg-blue-50 {
+        background-color: #374151 !important
+    }
+
+    .dark .text-blue-800 {
+        color: #e2e8f0 !important
+    }
+
+    .dark .text-blue-700 {
+        color: #cbd5e0 !important
+    }
+
+    .dark .text-gray-900 {
+        color: #e2e8f0 !important
+    }
+
+    .dark .text-gray-700 {
+        color: #cbd5e0 !important
+    }
+
+    .dark .hover\:text-gray-700:hover {
+        color: #e1e7ef !important
+    }
+
+    .dark .text-gray-500 {
+        color: #a0aec0 !important
+    }
+
+    .dark .border-gray-200, .dark .divide-gray-200 > * + * {
+        border-color: #718096 !important
+    }
+
+    .dark .hover\:bg-gray-50:hover, .dark .hover\:bg-gray-100:hover {
+        background-color: #374151 !important
+    }
+
+    .dark .chart-scroll-container {
+        border-color: #718096 !important
+    }
+
+    .dark .axis path, .dark .axis line {
+        stroke: #718096 !important
+    }
+
+    .dark .axis text {
+        fill: #a0aec0 !important
+    }
+
+    .dark .chart-legend-text {
+        fill: #a0aec0 !important
+    }
+
+    .shadow, .shadow-lg {
+        box-shadow: 0 10px 15px -3px #00000080, 0 4px 6px -2px #0000004d !important
+    }
+
+    .rounded-lg.shadow {
+        box-shadow: 0 4px 6px -1px #0006, 0 2px 4px -1px #0000004d !important
+    }
+
+    .dark .shadow, .dark .shadow-lg {
+        box-shadow: 0 10px 15px -3px #00000080, 0 4px 6px -2px #0000004d !important
+    }
+
+    .dark .rounded-lg.shadow {
+        box-shadow: 0 4px 6px -1px #0006, 0 2px 4px -1px #0000004d !important
+    }
+
+    .dark .text-blue-600 {
+        color: #60a5fa !important
+    }
+
+    .dark .border-blue-500 {
+        border-color: #60a5fa !important
+    }
+
+    .dark .bg-blue-600 {
+        background-color: #2563eb
+    }
+
+    .dark .hover\:bg-blue-700:hover {
+        background-color: #1d4ed8
+    }
+
+    .dark .hover\:bg-blue-800:hover {
+        background-color: #0a2b93
+    }
+
+    .dark .text-purple-700, .dark .text-purple-600 {
+        color: #d8b4fe !important
+    }
+
+    .dark .text-teal-600 {
+        color: #5eead4 !important
+    }
+
+    .dark .text-indigo-600 {
+        color: #727fea !important
+    }
+
+    .dark .text-red-600 {
+        color: #ef5353 !important
+    }
+
+    #theme-toggle {
+        cursor: pointer;
+        border-radius: .375rem;
+        padding: .5rem;
+        transition: background-color .2s
+    }
+
+    #theme-toggle:hover {
+        background-color: #ffffff1a
+    }
+
+    #fileMembersBody td:first-child, #fileMethodsBody td:first-child {
+        width: 100%;
+        max-width: 0
+    }
+
+    #fileMembersBody td:not(:first-child), #fileMethodsBody td:not(:first-child) {
+        white-space: nowrap;
+        width: 1%
+    }
+
+    #fileMembersBody th:first-child, #fileMethodsBody th:first-child {
+        width: 100%
+    }
+
+    #fileMembersBody th:not(:first-child), #fileMethodsBody th:not(:first-child) {
+        white-space: nowrap;
+        width: 1%
+    }
+
+    #fileMetricsBody td:first-child {
+        width: 100%;
+        max-width: 0
+    }
+
+    #fileMetricsBody td:not(:first-child) {
+        white-space: nowrap;
+        width: 1%
+    }
+
+    #fileMetricsBody th:first-child {
+        width: 100%
+    }
+
+    #fileMetricsBody th:not(:first-child) {
+        white-space: nowrap;
+        width: 1%
+    }
+
+    .sortable-header {
+        cursor: pointer;
+        user-select: none;
+        vertical-align: top;
+        text-align: center;
+        position: relative;
+        padding-right: 20px !important
+    }
+
+    .sortable-header:hover {
+        background-color: #0000000d
+    }
+
+    .dark .sortable-header:hover {
+        background-color: #ffffff0d
+    }
+
+    .sort-icon {
+        width: 16px;
+        height: 16px;
+        margin-left: 4px;
+        display: inline-block
+    }
+
+    .sort-arrow {
+        fill: #6b7280;
+        opacity: .4
+    }
+
+    .sort-arrow.active {
+        fill: #374151;
+        opacity: 1
+    }
+
+    .dark .sort-arrow {
+        fill: #9ca3af;
+        opacity: .5
+    }
+
+    .dark .sort-arrow.active {
+        fill: #e5e7eb;
+        opacity: 1
+    }
+
+}
+
+@layer utilities {
+
+    .opacity-80-on-hover:hover {
+        opacity: .8;
+    }
+
+    .chart-text-12 {
+        font-size: 12px;
+    }
+}
