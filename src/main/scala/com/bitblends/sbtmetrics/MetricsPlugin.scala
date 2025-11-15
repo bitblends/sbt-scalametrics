@@ -18,6 +18,13 @@ import sbt.internal.util.ManagedLogger
 
 import scala.meta.Dialect
 
+/**
+  * SBT Plugin for generating Scala source code metrics reports.
+  *
+  * This plugin provides tasks to analyze Scala source files in a project and generate metrics reports in various
+  * formats. It supports command-line arguments for customizing the analysis, including dialect overrides, output file
+  * names, exclusion patterns, and output formats.
+  */
 object MetricsPlugin extends AutoPlugin {
 
   // format: off
