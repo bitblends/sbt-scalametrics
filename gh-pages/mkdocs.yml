@@ -74,7 +74,7 @@ extra:
   version:
     provider: mike
   generator: false
-  project_version: !!python/object/apply:os.getenv [ "PROJECT_VERSION", "x.y.z" ]
+  project_version: !!python/object/apply:re.sub [ "^v", "", !!python/object/apply:os.getenv [ "PROJECT_VERSION", "x.y.z" ] ]
 extra_javascript:
   - javascripts/katex.js
   - https://unpkg.com/katex@0/dist/katex.min.js
