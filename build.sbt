@@ -23,6 +23,13 @@ lazy val sbtScalaMetrics = (project in file("."))
     Test / packageSrc / publishArtifact    := false,
     versionScheme                          := Some("early-semver"),
     pomIncludeRepository                   := { _ => false },
+    scmInfo                                := Some(
+      ScmInfo(
+        url(f"https://github.com/bitblends/${name.value}"),
+        f"scm:git:git@github.com:bitblends/${name.value}.git",
+        Some(f"scm:git:git@github.com:bitblends/${name.value}.git")
+      )
+    ),
     javacOptions ++= Seq("--release", "17"),
     scalacOptions ++= Seq(
       "-deprecation",

@@ -59,6 +59,20 @@ jobs:
           PROJECT_VERSION: ${{ inputs.tag }}
         working-directory: ./gh-pages
         run: |
+          set -euo pipefail
+          # Resolve PROJECT_VERSION: prefer input tag, else most recent git tag
+          if [ -z "${PROJECT_VERSION:-}" ]; then
+            PROJECT_VERSION="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+            if [ -z "$PROJECT_VERSION" ]; then
+              PROJECT_VERSION="$(git tag --sort=-creatordate | head -n1 || true)"
+            fi
+            if [ -z "$PROJECT_VERSION" ]; then
+              echo "Error: no git tags found to use as PROJECT_VERSION" >&2
+              exit 1
+            fi
+          fi
+          echo "Resolved PROJECT_VERSION=$PROJECT_VERSION"
+          export PROJECT_VERSION
           pip install --no-input PyYAML mkdocs-material mkdocs-macros-plugin mkdocs-autorefs
           mkdocs build
       - name: Upload gh-pages Artifact
