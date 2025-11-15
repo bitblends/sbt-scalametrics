@@ -5,7 +5,7 @@ name: Release
 #   - pushing a tag (manually)
 on:
   push:
-    tags: ['v*']
+    tags: [ 'v*' ]
 
 permissions:
   id-token: write
@@ -79,7 +79,7 @@ jobs:
   # Publish to Sonatype #
   #######################
   publish:
-    needs: [verify-tag]
+    needs: [ verify-tag ]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -115,17 +115,17 @@ jobs:
   # Deploy GitHub Pages #
   #######################
   deploy-pages:
-      needs:
-        - publish
-        - verify-tag
-      if: ${{ needs.publish.result == 'success' }}
-      permissions:
-        contents: read
-        pages: write
-        id-token: write
-      uses: ./.github/workflows/deploy-pages.yml
-      with:
-        tag: ${{ needs.verify-tag.outputs.tag_name }}
+    needs:
+      - publish
+      - verify-tag
+    if: ${{ needs.publish.result == 'success' }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy-pages.yml
+    with:
+      tag: ${{ needs.verify-tag.outputs.tag_name }}
 
   ##################
   # Create Release #
@@ -147,15 +147,16 @@ jobs:
       - name: Get Tag Message
         id: tag_message
         run: |
-          TAG=${{ steps.tagvars.outputs.tag_name }}
-          TAG_MESSAGE=$(git tag -l --format='%(contents)' ${{ steps.tagvars.outputs.tag_name }})
-          echo "$TAG_MESSAGE" > tag_message.txt
+          set -Eeuo pipefail
+          TAG="${{ needs.verify-tag.outputs.tag_name }}"
+          TAG_MESSAGE="$(git tag -l --format='%(contents)' "$TAG" || true)"
+          printf '%s' "$TAG_MESSAGE" > tag_message.txt
       - name: Gather PR Information and Generate Release Notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Initialize release notes
-          TAG=${{ needs.verify-tag.outputs.tag_name }}
+          set -Eeuo pipefail
+          TAG="${{ needs.verify-tag.outputs.tag_name }}"
           echo "## Release $TAG" > release_notes.md
           echo "" >> release_notes.md
           
@@ -167,9 +168,9 @@ jobs:
             echo "" >> release_notes.md
           fi
           
-          # Get previous tag (^ means parent commit of the tag)
+          # Previous tag (may be empty on first release)
           PREV_TAG=$(git describe --tags --abbrev=0 "$TAG"^ 2>/dev/null || echo "")
-         
+          
           # Get all commits between tags
           if [ -n "$PREV_TAG" ]; then
             COMMITS=$(git log --pretty=format:"%H" "$PREV_TAG..$TAG")
@@ -186,12 +187,12 @@ jobs:
           > style.txt
           > test.txt
           > other.txt
-
-          # Fetch recent merged PRs using GraphQL (we'll filter by commits later)
+          
+          # Fetch merged PRs; order by UPDATED_AT (valid IssueOrderField)
           PRS_JSON=$(gh api graphql -F owner="${{ github.repository_owner }}" -F name="${{ github.event.repository.name }}" -f query='
             query($owner: String!, $name: String!) {
               repository(owner: $owner, name: $name) {
-                pullRequests(first: 100, states: MERGED, orderBy: {field: MERGED_AT, direction: DESC}) {
+                pullRequests(first: 100, states: MERGED, orderBy: {field: UPDATED_AT, direction: DESC}) {
                   nodes {
                     number
                     title
@@ -202,16 +203,15 @@ jobs:
                 }
               }
             }
-          ' | jq '.data.repository.pullRequests.nodes')
-
-          # Filter and categorize PRs that are in our commit range
+          ' | jq -c '.data.repository.pullRequests.nodes // []')
+          
+          # Filter PRs by merge commit in commit range
           echo "$PRS_JSON" | jq -c '.[]' | while read -r pr; do
             PR_NUMBER=$(echo "$pr" | jq -r '.number')
             PR_TITLE=$(echo "$pr" | jq -r '.title')
             PR_MERGE_COMMIT=$(echo "$pr" | jq -r '.mergeCommit.oid // empty')
-            PR_LABELS=$(echo "$pr" | jq -r '.labels.nodes[].name // empty' | tr '\n' ' ')
-
-            # Check if this PR's merge commit is in our commit range
+            PR_LABELS=$(echo "$pr" | jq -r '.labels.nodes[]?.name // empty' | tr '\n' ' ')
+          
             if [ -n "$PR_MERGE_COMMIT" ] && echo "$COMMITS" | grep -q "$PR_MERGE_COMMIT"; then
               if echo "$PR_LABELS" | grep -qE "feat|feature|enhancement"; then
                 echo "- #$PR_NUMBER: $PR_TITLE" >> features.txt
@@ -276,7 +276,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -Eeuo pipefail
-  
+          
           # Extract tag from ref (e.g., refs/tags/v1.2.3 -> v1.2.3)
           REF="$GITHUB_REF"
           if [[ "$REF" == refs/tags/* ]]; then
@@ -284,22 +284,22 @@ jobs:
           else
             TAG="${{ needs.verify-tag.outputs.tag_name }}"
           fi
-  
+          
           if [ -z "$TAG" ]; then
             echo "No tag resolved. Skipping deletion."
             exit 0
           fi
-  
+          
           echo "Attempting to delete tag: $TAG"
-  
+          
           # Try GitHub API delete
           if gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$TAG"; then
             echo "Deleted remote tag via GitHub API: $TAG"
             exit 0
           fi
-  
+          
           echo "GitHub API delete failed. Trying git push --delete..."
-  
+          
           # Fallback via git
           git init -q
           git config user.email "actions@github.com"
