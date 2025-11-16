@@ -3,7 +3,7 @@ title: Sbt ScalaMetrics
 description: A plugin to for analyzing and generating reports of code metrics for Scala projects.
 keywords: [ Sbt, ScalaMetrics, Sbt ScalaMetrics, code metrics, static analysis, Scala, cyclomatic complexity, code quality, ScalaMeta ]
 layout: doc
-toc: true
+hide: [ title ]
 ---
 
 <style>
@@ -15,14 +15,16 @@ toc: true
 
 <!-- @formatter:off -->
 <!-- format: off -->
-<div class="header-logo" markdown="1"> 
 
-![Logo](images/logo_light.png#only-light){ width="36" }
-![Logo](images/logo.png#only-dark){ width="36" }
+<div class="header-logo" markdown> 
+
+![Logo](images/logo_light.png#only-light){ width="46" }
+![Logo](images/logo.png#only-dark){ width="46" }
 
 <span style="font-size: 36pt; font-weight: bold; padding-left: 6pt;">Sbt ScalaMetrics</span>
 </div>
-<div markdown class="badges">
+
+<div class="badges" markdown>
 
  [![Release](https://img.shields.io/github/v/release/bitblends/sbt-scalametrics?sort=semver&style=flat&color=darkgreen&labelColor=2f363d&logo=github&logoColor=white)](https://github.com/bitblends/sbt-scalametrics/releases/latest){:target="_blank"}
  [![Maven Central](https://img.shields.io/maven-central/v/com.bitblends/sbt-scalametrics_2.12_1.0?style=flat&color=darkgreen&labelColor=2f363d&logo=Sonatype&logoColor=white)](https://central.sonatype.com/artifact/com.bitblends/sbt-scalametrics_2.12_1.0){:target="_blank",style="margin-right: 10px;"}
@@ -30,17 +32,11 @@ toc: true
  [![License](https://img.shields.io/badge/License-MIT-3?style=flat&color=yellow&labelColor=2f363d&logoColor=white)](LICENSE){:target="_blank"}
 
 </div>
-<p markdown>
 
-[Sbt ScalaMetrics](https://github.com/bitblends/sbt-scalametrics){:target="_blank"} is an Sbt plugin
-for [ScalaMetrics](https://github.com/bitblends/scalametrics){:target="_blank"} library. It's a convenient way to
-analyze and generate reports of code metrics for Scala projects. It provides comprehensive analysis at multiple
-granularity levels: project, package, file, methods/members and generates a detailed single HTML report file
-with [Tailwind CSS](https://tailwindcss.com/){:target="_blank"} styling and interactive [d3.js](https://d3js.org/){:target="_blank"} 
-charts and raw JSON and CSV data files. Learn more about ScalaMetrics library by visiting
-the [ScalaMetrics Documentation](https://bitblends.github.io/scalametrics/){:target="_blank"} site.
 
-</p>
+[Sbt ScalaMetrics](https://github.com/bitblends/sbt-scalametrics){:target="_blank"} is an Sbt plugin for [ScalaMetrics](https://github.com/bitblends/scalametrics){:target="_blank"} library. It's a convenient way to analyze and generate reports of code metrics for Scala projects. It provides comprehensive analysis at multiple granularity levels: project, package, file, methods/members and generates a detailed single HTML report file with [Tailwind CSS](https://tailwindcss.com/){:target="_blank"} styling and interactive [d3.js](https://d3js.org/){:target="_blank"} charts and raw JSON and CSV data files. Learn more about ScalaMetrics library by visiting the [ScalaMetrics Documentation](https://bitblends.github.io/scalametrics/){:target="_blank"} site.
+
+
 <!-- format: on -->
 <!-- @formatter:on -->
 
@@ -58,7 +54,7 @@ the [ScalaMetrics Documentation](https://bitblends.github.io/scalametrics/){:tar
 	- Return type explicitness
 	- Inline and implicit usage
 - **Multi-module Support**: Works seamlessly with multi-module SBT projects
-- **Multiple Dialect Support**: Supports Scala 2.12.x, 2.13.x, and 3.3.x
+- **Multiple Dialect Support**: Supports Scala 2.12.x, 2.13.x, and 3.x.x
 - **Automatic Dialect Detection**: Automatically detects Scala dialects for accurate parsing using a combination of
   heuristics and statistical methods
 
@@ -72,9 +68,11 @@ page of ScalaMetrics library to learn more about the various metrics provided by
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please read the [CONTRIBUTING](CONTRIBUTING) guide for details on how to
+contribute.
 
 ## License
 
-Licensed under the MIT License. See [LICENSE](LICENSE.md){add_header Content-Disposition inline; } file for details.
+Licensed under the MIT License. See [LICENSE](LICENSE.md){add_header Content-Disposition inline; } file for
+details.
 

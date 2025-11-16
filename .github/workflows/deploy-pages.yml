@@ -39,9 +39,8 @@ jobs:
         uses: sbt/setup-sbt@v1
       - name: Build ScalaDocs
         run: |
-          cp LICENSE gh-pages/docs/LICENSE.md
-          cp CONTRIBUTING.md gh-pages/docs/
-          cp CODE_OF_CONDUCT.md gh-pages/docs/
+          cp -f CONTRIBUTING.md gh-pages/docs/CONTRIBUTING/index.md
+          cp -f CODE_OF_CONDUCT.md gh-pages/docs/CONTRIBUTING/
           sbt doc
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -59,7 +58,21 @@ jobs:
           PROJECT_VERSION: ${{ inputs.tag }}
         working-directory: ./gh-pages
         run: |
-          pip install --no-input PyYAML mkdocs-material mkdocs-macros-plugin mkdocs-autorefs
+          set -euo pipefail
+          # Resolve PROJECT_VERSION: prefer input tag, else most recent git tag
+          if [ -z "${PROJECT_VERSION:-}" ]; then
+            PROJECT_VERSION="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+            if [ -z "$PROJECT_VERSION" ]; then
+              PROJECT_VERSION="$(git tag --sort=-creatordate | head -n1 || true)"
+            fi
+            if [ -z "$PROJECT_VERSION" ]; then
+              echo "Error: no git tags found to use as PROJECT_VERSION" >&2
+              exit 1
+            fi
+          fi
+          echo "Resolved PROJECT_VERSION=$PROJECT_VERSION"
+          export PROJECT_VERSION
+          pip install --no-input PyYAML mkdocs-material mkdocs-macros-plugin mkdocs-autorefs mkdocs-callouts
           mkdocs build
       - name: Upload gh-pages Artifact
         id: deployment

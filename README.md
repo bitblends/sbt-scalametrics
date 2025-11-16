@@ -48,7 +48,7 @@ plugin [here](https://bitblends.github.io/sbt-scalametrics/example-report/metric
 Add the plugin to your project's `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.bitblends" % "sbt-scalametrics" % "1.1.0")
+addSbtPlugin("com.bitblends" % "sbt-scalametrics" % "1.1.1")
 ```
 
 ### For Flat Projects or Per-Module Analysis
@@ -98,7 +98,7 @@ for more details on configuration, data schemas, and usage.
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
 
 ## License
 

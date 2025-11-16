@@ -7,11 +7,9 @@ package com.bitblends.sbtmetrics.utils
 
 import com.bitblends.sbtmetrics.csv.Csv
 import com.bitblends.scalametrics.stats.model.{
-  FileStats,
   FileStatsMetadata,
   MemberStats,
   MethodStats,
-  PackageStats,
   ProjectMetadata,
   ProjectStats
 }
