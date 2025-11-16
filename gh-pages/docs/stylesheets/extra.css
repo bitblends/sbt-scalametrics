@@ -1,11 +1,11 @@
 .badges p {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem; /* or 8px or whatever */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem; /* or 8px or whatever */
 }
 
 .badges p a {
-  display: inline-block;
+    display: inline-block;
 }
 
 .header-logo {
@@ -15,6 +15,17 @@
 }
 
 .header-logo p {
-    padding: 0;
-    margin: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    margin-block: unset !important;
+    align-self: flex-end;
+    line-height: 1 !important;
+}
+
+.mkonly-content.hidden {
+    display: none !important;
+}
+
+.mkonly-content.visible {
+    display: contents !important;
 }

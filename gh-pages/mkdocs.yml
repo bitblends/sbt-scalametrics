@@ -22,12 +22,15 @@ theme:
         name: Switch to light mode
   features:
     - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
     - navigation.tracking
     - navigation.tabs
     - navigation.sections
     - navigation.top
     - navigation.instant.progress
     - navigation.expand
+    - navigation.indexes
     - search.suggest
     - search.highlight
     - content.code.copy
@@ -42,6 +45,7 @@ plugins:
   - search
   - macros
   - autorefs
+  - callouts
 markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
@@ -52,6 +56,8 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.snippets
@@ -84,9 +90,14 @@ extra_css:
   - stylesheets/extra.css
 copyright: Copyright &copy; 2025 - Sbt ScalaMetrics Maintainers
 nav:
-  - Home: index.md
+  - Home:
+      - Sbt ScalaMetrics: index.md
+      - LICENSE: CONTRIBUTING/LICENSE.md
+      - CONTRIBUTING: CONTRIBUTING/index.md
+      - CODE OF CONDUCT: CONTRIBUTING/CODE_OF_CONDUCT.md
   - Getting Started: getting-started/index.md
   - Schema Definition: schema-definition/index.md
   - Example Report: example-report/index.md
+
 
 
