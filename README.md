@@ -98,7 +98,7 @@ for more details on configuration, data schemas, and usage.
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
 
 ## License
 
